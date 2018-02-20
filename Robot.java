@@ -110,6 +110,7 @@ public class Robot extends IterativeRobot
 		chosenPosition.addObject("Left", "Left");
 		chosenPosition.addObject("Middle", "Middle");
 		chosenPosition.addObject("Right", "Right");
+		chosenPosition.addObject("Test", "Test");
 		SmartDashboard.putData("chosenPosition", chosenPosition);
 		
 		leftMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 20);	
@@ -164,7 +165,7 @@ public class Robot extends IterativeRobot
 			liftLift(2, true);
 			driveDistance(130, 0.5);
 			turnAngle(30);
-			liftLift(2, true);
+			liftLift(4, true);
 			togglePusher(true);
 			toggleArms(false);
 			togglePusher(false);
@@ -174,66 +175,112 @@ public class Robot extends IterativeRobot
 		else if(gameData.equals("LLL") && chosenPosition.getSelected().equals("Middle"))
 		{
 			liftLift(2, true);
+			driveDistance(10, 1);
+			turnAngle(30);
+			driveDistance(120, 0.5);
 		}
 		
 		//Possibility 3: Left Left Left, start right
 		else if(gameData.equals("LLL") && chosenPosition.getSelected().equals("Right"))
 		{
-			liftLift(2, false);
+			liftLift(2, true);
+			driveDistance(135, 0.5);
 		}
 		
 		//Possibility 4: Left Right Left, start left
 		else if(gameData.equals("LRL") && chosenPosition.getSelected().equals("Left"))
 		{
-			
+			liftLift(2, true);
+			driveDistance(130, 0.5);
+			turnAngle(30);
+			liftLift(2, true);
+			togglePusher(true);
+			toggleArms(false);
+			togglePusher(false);
 		}
 		
 		//Possibility 5: Left Right Left, start middle
 		else if(gameData.equals("LRL") && chosenPosition.getSelected().equals("Middle"))
 		{
-			
+			liftLift(2, true);
+			driveDistance(10, 1);
+			turnAngle(30);
+			driveDistance(120, 0.5);
 		}
 		
 		//Possibility 6: Left Right Left, start right
 		else if(gameData.equals("LRL") && chosenPosition.getSelected().equals("Right"))
 		{
-			
+			liftLift(2, true);
+			driveDistance(280, 0.5);
 		}
 		
 		//Possibility 7: Right Left Right, start left
 		else if(gameData.equals("RLR") && chosenPosition.getSelected().equals("Left"))
 		{
-			
+			liftLift(2, true);
+			driveDistance(280, 0.5);
 		}
 		
 		//Possibility 8: Right Left Right, start middle
 		else if(gameData.equals("RLR") && chosenPosition.getSelected().equals("Middle"))
 		{
-			
+			liftLift(2, true);
+			turnAngle(-45);
+			driveDistance(130, 0.5);
 		}
 		
 		//Possibility 9: Right Left Right, start right
 		else if(gameData.equals("RLR") && chosenPosition.getSelected().equals("Right"))
 		{
+			liftLift(2, true);
+			driveDistance(130, 0.5);
+			liftLift(4, true);
+			driveDistance(5, 1);
+			togglePusher(true);
+			toggleArms(false);
+			togglePusher(false);
 			
 		}
 		
 		//Possibility 10: Right Right Right, start left
 		else if(gameData.equals("RRR") && chosenPosition.getSelected().equals("Left"))
 		{
-			
+			liftLift(2, true);
+			driveDistance(140, 0.5);
 		}
 		
 		//Possibility 11: Right Right Right, start middle
 		else if(gameData.equals("RRR") && chosenPosition.getSelected().equals("Middle"))
 		{
-			
+			liftLift(2, true);
+			turnAngle(-45);
+			driveDistance(130, 0.5);
 		}
 
 		//Possibility 12: Right Right Right, start right
 		else if(gameData.equals("RRR") && chosenPosition.getSelected().equals("Right"))
 		{
-			
+			liftLift(2, true);
+			driveDistance(130, 0.5);
+			liftLift(4, true);
+			driveDistance(5, 1);
+			togglePusher(true);
+			toggleArms(false);
+			togglePusher(false);
+		}
+		
+		//Test Mode LLL
+		else if(gameData.equals("LLL") && chosenPosition.getSelected().equals("Test"))
+		{
+			liftLift(2, true);
+			try {
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			liftLift(2, false);
 		}
 	}
 	
@@ -245,9 +292,12 @@ public class Robot extends IterativeRobot
 	@Override
 	public void teleopPeriodic()
 	{	
+		
+		//Drive train control
 		leftMaster.set(ControlMode.PercentOutput, driverOne.getY());
 		rightMaster.set(ControlMode.PercentOutput, driverTwo.getY());
 		
+		//Enables brake mode
 		if (driverOne.getTrigger() && driverTwo.getTrigger()) 
 		{
 			toggleBrakeMode(true);
@@ -258,15 +308,19 @@ public class Robot extends IterativeRobot
 			toggleBrakeMode(false);
 		}
 		
+		//Prevents lift from moving if top limit switch is active
 		if(limitSwitchTop.get() == true && operator.getY() > 0)
 		{
 			liftMaster.set(ControlMode.Disabled, 0);
 		}
 		else 
 		{
-			liftMaster.set(ControlMode.PercentOutput, operator.getY());
+			//Lift Control
+			liftMaster.set(ControlMode.PercentOutput, -operator.getY());
+			
 		}
 	
+		//Toggles arm states
 		if (operator.getTrigger() && !toggleArms)
 		{
 			if(cubeArms.get() == Value.kReverse || cubeArms.get() == Value.kOff)
@@ -281,6 +335,7 @@ public class Robot extends IterativeRobot
 		else if(!operator.getTrigger())
 			toggleArms = false;
 		
+		//Toggles pusher states
 		if (operator.getRawButton(3) && !togglePusher)
 		{
 			if(cubePusher.get() == Value.kReverse || cubePusher.get() == Value.kOff)
@@ -295,6 +350,8 @@ public class Robot extends IterativeRobot
 		else if (!operator.getRawButton(3))
 			togglePusher = false;
 		
+		
+		//Controls climber
 		if (operator.getRawButton(2))
 		{
 			climberOne.set(1);
@@ -323,12 +380,14 @@ public class Robot extends IterativeRobot
 			
 			leftSlave.set(ControlMode.PercentOutput, -TURN_ANGLE_SPEED);
 			leftMaster.set(ControlMode.PercentOutput, -TURN_ANGLE_SPEED);
+		
 			rightSlave.set(ControlMode.PercentOutput, TURN_ANGLE_SPEED);
 			rightMaster.set(ControlMode.PercentOutput, TURN_ANGLE_SPEED);
 		}
 		
 		leftSlave.set(ControlMode.PercentOutput, 0);
 		leftMaster.set(ControlMode.PercentOutput, 0);
+		
 		rightSlave.set(ControlMode.PercentOutput, 0);
 		rightMaster.set(ControlMode.PercentOutput, 0);
 
@@ -339,12 +398,14 @@ public class Robot extends IterativeRobot
 			
 			leftSlave.set(ControlMode.PercentOutput, TURN_ANGLE_SPEED);
 			leftMaster.set(ControlMode.PercentOutput, TURN_ANGLE_SPEED);
+			
 			rightSlave.set(ControlMode.PercentOutput, -TURN_ANGLE_SPEED);
 			rightMaster.set(ControlMode.PercentOutput, -TURN_ANGLE_SPEED);
 		}
 		
 		leftSlave.set(ControlMode.PercentOutput, 0);
 		leftMaster.set(ControlMode.PercentOutput, 0);
+		
 		rightSlave.set(ControlMode.PercentOutput, 0);
 		rightMaster.set(ControlMode.PercentOutput, 0);
 	}
@@ -413,10 +474,10 @@ public class Robot extends IterativeRobot
 	{
 		autonTimer.start();
 		
-		double speed = 0.5;
+		double speed = -0.5;
 		
 		if (!upward)
-			speed = -0.5;
+			speed = 0.5;
 		
 		
 		while (autonTimer.get() >= 0 && autonTimer.get() < duration && !limitSwitchTop.get())
